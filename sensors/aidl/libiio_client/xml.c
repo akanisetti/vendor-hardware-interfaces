@@ -32,15 +32,11 @@ static int add_attr_to_channel(struct iio_channel *chn, xmlNode *n)
 
     for (attr = n->properties; attr; attr = attr->next) {
         if (!strcmp((char *) attr->name, "name")) {
+            free(name);
             name = iio_strdup((char *) attr->children->content);
-            // name = (char *) attr->children->content;
-            // if (!name)
-            //     goto err_free;
         } else if (!strcmp((char *) attr->name, "filename")) {
+            free(filename);
             filename = iio_strdup((char *) attr->children->content);
-            // filename = (char *) attr->children->content;
-            // if (!filename)
-            //     goto err_free;
         } else {
             WARNING("Unknown field \'%s\' in channel %s\n",
                     attr->name, chn->id);
@@ -83,8 +79,8 @@ static int add_attr_to_device(struct iio_device *dev, xmlNode *n, enum iio_attr_
 
     for (attr = n->properties; attr; attr = attr->next) {
         if (!strcmp((char *) attr->name, "name")) {
+            free(name);
             name = iio_strdup((char *) attr->children->content);
-            // name = (char *) attr->children->content;
         } else {
             WARNING("Unknown field \'%s\' in device %s\n",
                     attr->name, dev->id);
@@ -193,8 +189,10 @@ static struct iio_channel * create_channel(struct iio_device *dev, xmlNode *n)
         const char *name = (const char *) attr->name,
               *content = (const char *) attr->children->content;
         if (!strcmp(name, "name")) {
+            free(chn->name);
             chn->name = iio_strdup(content);
         } else if (!strcmp(name, "id")) {
+            free(chn->id);
             chn->id = iio_strdup(content);
         } else if (!strcmp(name, "type")) {
             if (!strcmp(content, "output"))
@@ -246,10 +244,12 @@ static struct iio_device * create_device(struct iio_context *ctx, xmlNode *n)
 
     for (attr = n->properties; attr; attr = attr->next) {
         if (!strcmp((char *) attr->name, "name")) {
-            dev->name = iio_strdup(
+                free(dev->name);
+                dev->name = iio_strdup(
                     (char *) attr->children->content);
         } else if (!strcmp((char *) attr->name, "id")) {
-            dev->id = iio_strdup((char *) attr->children->content);
+                free(dev->id);
+                dev->id = iio_strdup((char *) attr->children->content);
         } else {
             WARNING("Unknown attribute \'%s\' in <device>\n",
                     attr->name);
@@ -371,12 +371,14 @@ static struct iio_context * iio_create_xml_context_helper(xmlDoc *doc)
     }
 
     for (attr = root->properties; attr; attr = attr->next) {
-        if (!strcmp((char *) attr->name, "description"))
+        if (!strcmp((char *) attr->name, "description")) {
+            free(ctx->description);
             ctx->description = iio_strdup(
-                    (char *) attr->children->content);
-        else if (strcmp((char *) attr->name, "name"))
+                (char *) attr->children->content);
+        } else if (strcmp((char *) attr->name, "name")) {
             WARNING("Unknown parameter \'%s\' in <context>\n",
-                    (char *) attr->children->content);
+                (char *) attr->children->content);
+        }
     }
 
     for (n = root->children; n; n = n->next) {
@@ -435,6 +437,8 @@ err_free_devices:
     free(ctx->attrs);
     free(ctx->values);
 err_free_ctx:
+    if (ctx->description)
+        free(ctx->description);
     free(ctx);
 err_set_errno:
     errno = -err;
