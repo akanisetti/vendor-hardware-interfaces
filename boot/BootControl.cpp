@@ -40,7 +40,9 @@ BootControl::BootControl() {
         mModule = module;
     }
 
-    mModule->init(mModule);
+    if (mModule) {
+        mModule->init(mModule);
+    }
 }
 
 ScopedAStatus BootControl::getActiveBootSlot(int32_t* _aidl_return) {
