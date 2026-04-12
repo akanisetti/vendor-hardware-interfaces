@@ -28,7 +28,7 @@ using ndk::ScopedAStatus;
 
 namespace aidl::android::hardware::boot {
 
-BootControl::BootControl() {
+BootControl::BootControl() : mModule(nullptr) {
     int ret = 0;
 
     boot_control_module_t *module = NULL;
