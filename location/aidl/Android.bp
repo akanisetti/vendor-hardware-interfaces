@@ -1,0 +1,18 @@
+aidl_interface {
+    name: "vendor.intel.location",
+    unstable: true,
+    srcs: [
+        "vendor/intel/location/*.aidl",
+    ],
+    backend: {
+        java: {
+            enabled: true,
+        },
+        cpp: {
+            enabled: false,
+        },
+        ndk: {
+            enabled: true,
+        },
+    },
+}
