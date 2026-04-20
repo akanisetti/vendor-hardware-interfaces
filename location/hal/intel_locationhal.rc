@@ -1,0 +1,8 @@
+service vendor.intel.location.hal /vendor/bin/vendor.intel.location.hal
+    class hal
+    user system
+    group system
+
+on post-fs-data
+    mkdir /data/vendor/location 0770 system system
+    restorecon_recursive /data/vendor/location
