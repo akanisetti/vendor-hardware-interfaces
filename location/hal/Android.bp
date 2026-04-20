@@ -1,0 +1,17 @@
+cc_binary {
+    name: "vendor.intel.location.hal",
+    vendor: true,
+    srcs: [
+        "LocationHal.cpp",
+        "main.cpp",
+    ],
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "liblog",
+    ],
+    static_libs: [
+        "vendor.intel.location-ndk",
+    ],
+    init_rc: ["intel_locationhal.rc"],
+}
