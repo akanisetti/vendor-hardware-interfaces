@@ -1,9 +1,10 @@
 aidl_interface {
     name: "vendor.intel.location",
-    unstable: true,
+    vendor_available: true,
     srcs: [
         "vendor/intel/location/*.aidl",
     ],
+    stability: "vintf",
     backend: {
         java: {
             enabled: true,
@@ -15,4 +16,11 @@ aidl_interface {
             enabled: true,
         },
     },
+    versions_with_info: [
+        {
+            version: "1",
+            imports: [],
+        },
+    ],
+    frozen: true,
 }

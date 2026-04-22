@@ -31,7 +31,7 @@ public:
     ndk::ScopedAStatus getLongitude(double* _aidl_return) override;
 
 private:
-    void readConfig();
+    bool readConfig();
 
     const std::string mConfigPath;
     mutable std::mutex mMutex;

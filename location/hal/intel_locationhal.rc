@@ -2,6 +2,7 @@ service vendor.intel.location.hal /vendor/bin/vendor.intel.location.hal
     class hal
     user system
     group system
+    interface aidl vendor.intel.location.ILocationHal/default
 
 on post-fs-data
     mkdir /data/vendor/location 0770 system system

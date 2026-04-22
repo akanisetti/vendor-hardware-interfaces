@@ -41,6 +41,9 @@ bool ParseDoubleNoExcept(const std::string& text, double* out) {
     if (*end != '\0' || errno == ERANGE) {
         return false;
     }
+    if (!std::isfinite(value)) {
+        return false;
+    }
     *out = value;
     return true;
 }
@@ -53,24 +56,31 @@ LocationHal::LocationHal(const std::string& configPath) : mConfigPath(configPath
 
 ndk::ScopedAStatus LocationHal::getLatitude(double* _aidl_return) {
     std::lock_guard<std::mutex> lock(mMutex);
-    readConfig();
+    if (!readConfig()) {
+        return ndk::ScopedAStatus::fromExceptionCode(EX_SERVICE_SPECIFIC);
+    }
     *_aidl_return = mLatitude;
     return ndk::ScopedAStatus::ok();
 }
 
 ndk::ScopedAStatus LocationHal::getLongitude(double* _aidl_return) {
     std::lock_guard<std::mutex> lock(mMutex);
-    readConfig();
+    if (!readConfig()) {
+        return ndk::ScopedAStatus::fromExceptionCode(EX_SERVICE_SPECIFIC);
+    }
     *_aidl_return = mLongitude;
     return ndk::ScopedAStatus::ok();
 }
 
-void LocationHal::readConfig() {
+bool LocationHal::readConfig() {
     std::ifstream file(mConfigPath);
     if (!file.is_open()) {
         LOG(WARNING) << "LocationHal: cannot open " << mConfigPath;
-        return;
+        return false;
     }
+
+    bool latParsed = false;
+    bool lonParsed = false;
 
     std::string line;
     int lineNum = 0;
@@ -100,19 +110,38 @@ void LocationHal::readConfig() {
         if (key == "lat") {
             double parsed = 0.0;
             if (ParseDoubleNoExcept(val, &parsed)) {
-                mLatitude = parsed;
+                if (parsed >= -90.0 && parsed <= 90.0) {
+                    mLatitude = parsed;
+                    latParsed = true;
+                } else {
+                    LOG(WARNING) << "LocationHal: out-of-range latitude value at line "
+                                 << lineNum << ": " << val;
+                }
             } else {
-                LOG(WARNING) << "LocationHal: invalid latitude value: " << val;
+                LOG(WARNING) << "LocationHal: invalid latitude value at line " << lineNum << ": " << val;
             }
         } else if (key == "lon") {
             double parsed = 0.0;
             if (ParseDoubleNoExcept(val, &parsed)) {
-                mLongitude = parsed;
+                if (parsed >= -180.0 && parsed <= 180.0) {
+                    mLongitude = parsed;
+                    lonParsed = true;
+                } else {
+                    LOG(WARNING) << "LocationHal: out-of-range longitude value at line "
+                                 << lineNum << ": " << val;
+                }
             } else {
-                LOG(WARNING) << "LocationHal: invalid longitude value: " << val;
+                LOG(WARNING) << "LocationHal: invalid longitude value at line " << lineNum << ": " << val;
             }
         }
     }
+
+    if (!latParsed || !lonParsed) {
+        LOG(WARNING) << "LocationHal: missing or invalid coordinates in config";
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace aidl::vendor::intel::location
