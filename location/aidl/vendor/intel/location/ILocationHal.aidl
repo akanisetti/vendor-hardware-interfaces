@@ -19,6 +19,7 @@ package vendor.intel.location;
 /**
  * Interface for reading static location from vendor HAL.
  */
+@VintfStability
 interface ILocationHal {
     /**
      * Get the current latitude.
