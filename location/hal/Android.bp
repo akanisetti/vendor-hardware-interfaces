@@ -11,7 +11,8 @@ cc_binary {
         "liblog",
     ],
     static_libs: [
-        "vendor.intel.location-ndk",
+        "vendor.intel.location-V1-ndk",
     ],
     init_rc: ["intel_locationhal.rc"],
+    vintf_fragments: ["vendor.intel.location.xml"],
 }
